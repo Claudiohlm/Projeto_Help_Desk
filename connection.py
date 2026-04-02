@@ -1,0 +1,1 @@
+# arquivo para configuraçao da conexao com o banco de dados
