@@ -1,0 +1,20 @@
+Definir a variavel de ambiente Flask_APP
+$env:FLASK_APP = "app.py"
+
+
+criar o diretorio chamdo migrate
+flask db init      ou 
+python -m flask db init
+
+criar o arquivo de migração
+flask db migrate -m "mensagem de identificação"
+
+aplicar as mudanças geradas pelo flask no banco de dados
+flask db upgrade
+
+
+Para o linux os comandos são
+export FLASK_APP=app.py
+
+Se você estiver em desenvolvimento e quiser modo debug:
+export FLASK_ENV=development
