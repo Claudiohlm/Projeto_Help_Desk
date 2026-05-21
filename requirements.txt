@@ -1,9 +1,11 @@
 alembic==1.18.4
+aniso8601==10.0.1
 blinker==1.9.0
 click==8.3.1
 Flask==3.1.3
 flask-marshmallow==1.5.0
 Flask-Migrate==4.1.0
+Flask-RESTful==0.3.10
 Flask-SQLAlchemy==3.1.1
 greenlet==3.4.0
 itsdangerous==2.2.0
@@ -16,6 +18,8 @@ passlib==1.7.4
 psycopg==3.3.3
 psycopg-binary==3.3.3
 python-dotenv==1.2.2
+pytz==2026.2
+six==1.17.0
 SQLAlchemy==2.0.49
 typing_extensions==4.15.0
 Werkzeug==3.1.7
