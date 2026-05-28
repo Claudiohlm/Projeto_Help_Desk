@@ -14,11 +14,8 @@ def cadastrar_usuario(usuario):
 
 # listar todos usuarios
 def listar_usuario():
-    usuarios = UsuarioModel.query.all()
-    schema = UsuarioSchema(many=True)
-    resultado = schema.dump(usuarios)
+    return UsuarioModel.query.all()
 
-    return jsonify(resultado), 200
 
 # listar usuario por id
 def listar_usuario_id(id):
@@ -45,10 +42,10 @@ def deletar_usuario(id):
 def editar_usuario(id, novo_usuario):
     usuario = UsuarioModel.query.get(id)
     if usuario:
-        usuario.nome = novo_usuario.nome
-        usuario.email = novo_usuario.email
-        if novo_usuario.senha:
-            usuario.gen_senha(novo_usuario.senha)
+        usuario.nome = novo_usuario['nome']
+        usuario.email = novo_usuario['email']
+        if novo_usuario.get('senha'):
+            usuario.gen_senha(novo_usuario['senha'])
 
         db.session.commit()
         return usuario
