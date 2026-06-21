@@ -1,10 +1,16 @@
-# criar as rotas da API, camada que recebe as requisicoes
+# camada de servico do usuario
 from ..models.usuario_model import UsuarioModel
-from ..schemas.usuario_schema import UsuarioSchema
-from flask import jsonify
 from src import db
 
-# cadastrar usuario
+
+# cadastrar usuario a partir de um objeto ja montado (com senha e tipo definidos)
+def cadastrar_usuario_obj(usuario_db):
+    db.session.add(usuario_db)
+    db.session.commit()
+    return usuario_db
+
+
+# versao antiga (mantida por compatibilidade, caso algo use)
 def cadastrar_usuario(usuario):
     usuario_db = UsuarioModel(nome=usuario.nome, email=usuario.email, senha=usuario.senha)
     usuario_db.gen_senha(usuario.senha)
@@ -12,33 +18,28 @@ def cadastrar_usuario(usuario):
     db.session.commit()
     return usuario_db
 
-# listar todos usuarios
+
 def listar_usuario():
     return UsuarioModel.query.all()
 
 
-# listar usuario por id
 def listar_usuario_id(id):
-    usuario_encontrado = UsuarioModel.query.get(id)
-    return usuario_encontrado
- 
+    return UsuarioModel.query.get(id)
 
-# listar usuario por email
+
 def listar_usuario_email(email):
     return UsuarioModel.query.filter_by(email=email).first()
 
-# deletar usuario
+
 def deletar_usuario(id):
     usuario = UsuarioModel.query.get(id)
     if usuario:
-        # se verdadeiro
         db.session.delete(usuario)
         db.session.commit()
         return True
     return False
 
 
-# editar usuario
 def editar_usuario(id, novo_usuario):
     usuario = UsuarioModel.query.get(id)
     if usuario:
@@ -46,7 +47,6 @@ def editar_usuario(id, novo_usuario):
         usuario.email = novo_usuario['email']
         if novo_usuario.get('senha'):
             usuario.gen_senha(novo_usuario['senha'])
-
         db.session.commit()
         return usuario
     return None

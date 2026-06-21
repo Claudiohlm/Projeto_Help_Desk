@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HelpDesk — Sistema de Suporte</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #f4f5f7; }
+    .navbar-brand { font-weight: 600; }
+    .badge-status { font-size: .75rem; }
+    .card-chamado { transition: box-shadow .15s; }
+    .card-chamado:hover { box-shadow: 0 .25rem .75rem rgba(0,0,0,.08); }
+    .tela { display: none; }
+    .tela.ativa { display: block; }
+    .resposta-item { border-left: 3px solid #0d6efd; background: #f8f9fa; }
+    .login-box { max-width: 440px; margin: 6vh auto; }
+    .admin-tag { background: #6f42c1; }
+  </style>
+</head>
+<body>
+
+<!-- ============ LOGIN / CADASTRO ============ -->
+<div id="telaLogin" class="tela ativa">
+  <div class="login-box">
+    <div class="text-center mb-4">
+      <i class="bi bi-headset" style="font-size: 3rem; color: #0d6efd;"></i>
+      <h2 class="mt-2">HelpDesk</h2>
+      <p class="text-muted">Sistema de Suporte Técnico</p>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <ul class="nav nav-pills nav-justified mb-4">
+          <li class="nav-item"><button class="nav-link active" id="tabLogin" onclick="trocarAba('login')">Entrar</button></li>
+          <li class="nav-item"><button class="nav-link" id="tabCadastro" onclick="trocarAba('cadastro')">Cadastrar</button></li>
+        </ul>
+
+        <div id="formLogin">
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="seu@email.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Senha</label>
+            <input type="password" id="loginSenha" class="form-control" placeholder="••••••">
+          </div>
+          <button class="btn btn-primary w-100" onclick="fazerLogin()">
+            <i class="bi bi-box-arrow-in-right"></i> Entrar
+          </button>
+        </div>
+
+        <div id="formCadastro" style="display:none">
+          <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" id="cadNome" class="form-control" placeholder="Seu nome">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" id="cadEmail" class="form-control" placeholder="seu@email.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Senha</label>
+            <input type="password" id="cadSenha" class="form-control" placeholder="mínimo 6 caracteres">
+          </div>
+          <button class="btn btn-success w-100" onclick="cadastrar()">
+            <i class="bi bi-person-plus"></i> Criar conta
+          </button>
+        </div>
+
+        <div id="loginAlerta" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINCIPAL ============ -->
+<div id="telaPrincipal" class="tela">
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+      <span class="navbar-brand"><i class="bi bi-headset"></i> HelpDesk</span>
+      <span class="text-white">
+        <i class="bi bi-person-circle"></i> <span id="nomeUsuario"></span>
+        <span id="tagTipo" class="badge ms-1"></span>
+        <button class="btn btn-sm btn-outline-light ms-3" onclick="logout()">Sair</button>
+      </span>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <div class="row">
+      <!-- Novo chamado -->
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white"><strong><i class="bi bi-plus-circle"></i> Abrir chamado</strong></div>
+          <div class="card-body">
+            <div class="mb-2">
+              <label class="form-label small">Título</label>
+              <input type="text" id="novoTitulo" class="form-control form-control-sm" placeholder="Resumo do problema">
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Descrição</label>
+              <textarea id="novoDescricao" class="form-control form-control-sm" rows="3" placeholder="Detalhe o problema"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small">Categoria</label>
+              <select id="novoCategoria" class="form-select form-select-sm">
+                <option value="software">Software</option>
+                <option value="hardware">Hardware</option>
+              </select>
+              <div class="form-text">A prioridade é definida automaticamente pela categoria.</div>
+            </div>
+            <button class="btn btn-primary btn-sm w-100" onclick="abrirChamado()">
+              <i class="bi bi-send"></i> Abrir chamado
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista -->
+      <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0" id="tituloLista">Meus chamados</h5>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary" onclick="carregarChamados()">Todos</button>
+            <button class="btn btn-outline-secondary" onclick="carregarChamados('aberto')">Abertos</button>
+            <button class="btn btn-outline-secondary" onclick="carregarChamados('em_atendimento')">Em atend.</button>
+            <button class="btn btn-outline-secondary" onclick="carregarChamados('resolvido')">Resolvidos</button>
+          </div>
+        </div>
+        <div id="listaChamados"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal fade" id="modalChamado" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitulo">Chamado</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalCorpo"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = "";
+let usuarioLogado = null;
+let chamadoAberto = null;
+
+function mostrarTela(id) {
+  document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+function trocarAba(aba) {
+  const ehLogin = aba === 'login';
+  document.getElementById('formLogin').style.display = ehLogin ? 'block' : 'none';
+  document.getElementById('formCadastro').style.display = ehLogin ? 'none' : 'block';
+  document.getElementById('tabLogin').classList.toggle('active', ehLogin);
+  document.getElementById('tabCadastro').classList.toggle('active', !ehLogin);
+  document.getElementById('loginAlerta').innerHTML = '';
+}
+function alerta(msg, tipo = 'danger') {
+  document.getElementById('loginAlerta').innerHTML =
+    `<div class="alert alert-${tipo} py-2 mb-0">${msg}</div>`;
+}
+function ehAdmin() { return usuarioLogado && usuarioLogado.tipo === 'admin'; }
+
+// ===== CADASTRO =====
+async function cadastrar() {
+  const nome = document.getElementById('cadNome').value.trim();
+  const email = document.getElementById('cadEmail').value.trim();
+  const senha = document.getElementById('cadSenha').value;
+
+  if (!nome || !email || !senha) { alerta('Preencha nome, email e senha.'); return; }
+
+  try {
+    const r = await fetch(`${API}/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha })
+    });
+    const dados = await r.json();
+    if (r.status === 201) {
+      alerta('Conta criada! Agora faça login.', 'success');
+      trocarAba('login');
+      document.getElementById('loginEmail').value = email;
+    } else {
+      alerta(dados.message || 'Erro ao cadastrar.');
+    }
+  } catch (e) { alerta('Erro de conexão com o servidor.'); }
+}
+
+// ===== LOGIN =====
+async function fazerLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const senha = document.getElementById('loginSenha').value;
+  if (!email || !senha) { alerta('Informe email e senha.'); return; }
+
+  try {
+    const r = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    });
+    const dados = await r.json();
+    if (r.status === 200) {
+      usuarioLogado = dados.usuario;
+      document.getElementById('nomeUsuario').textContent = usuarioLogado.nome;
+      const tag = document.getElementById('tagTipo');
+      if (ehAdmin()) {
+        tag.textContent = 'ADMIN';
+        tag.className = 'badge ms-1 admin-tag';
+      } else {
+        tag.textContent = 'comum';
+        tag.className = 'badge ms-1 bg-secondary';
+      }
+      document.getElementById('tituloLista').textContent = ehAdmin() ? 'Todos os chamados' : 'Meus chamados';
+      mostrarTela('telaPrincipal');
+      carregarChamados();
+    } else {
+      alerta(dados.message || 'Falha no login.');
+    }
+  } catch (e) { alerta('Erro de conexão com o servidor.'); }
+}
+function logout() {
+  usuarioLogado = null;
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginSenha').value = '';
+  document.getElementById('loginAlerta').innerHTML = '';
+  mostrarTela('telaLogin');
+}
+
+function corStatus(s){return {aberto:'primary',em_atendimento:'warning',resolvido:'success',fechado:'secondary'}[s]||'secondary';}
+function corPrioridade(p){return {baixa:'secondary',media:'info',alta:'warning',critica:'danger'}[p]||'secondary';}
+
+// ===== CHAMADOS =====
+async function abrirChamado() {
+  const titulo = document.getElementById('novoTitulo').value.trim();
+  const descricao = document.getElementById('novoDescricao').value.trim();
+  const categoria = document.getElementById('novoCategoria').value;
+  if (!titulo || !descricao) { alert('Preencha título e descrição.'); return; }
+
+  // a prioridade NAO e enviada — o backend define pela categoria
+  const r = await fetch(`${API}/chamados`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ titulo, descricao, categoria, usuario_id: usuarioLogado.id })
+  });
+  if (r.status === 201) {
+    document.getElementById('novoTitulo').value = '';
+    document.getElementById('novoDescricao').value = '';
+    carregarChamados();
+  } else {
+    const d = await r.json();
+    alert('Erro: ' + (d.message || 'tente novamente'));
+  }
+}
+
+async function carregarChamados(status = null) {
+  // envia quem sou eu (id e tipo) para o backend aplicar a permissao
+  let url = `${API}/chamados?usuario_id=${usuarioLogado.id}&tipo=${usuarioLogado.tipo}`;
+  if (status) url += `&status=${status}`;
+
+  const r = await fetch(url);
+  const lista = document.getElementById('listaChamados');
+  if (r.status !== 200) { lista.innerHTML = '<div class="alert alert-light text-center">Nenhum chamado encontrado.</div>'; return; }
+
+  const chamados = await r.json();
+  if (!chamados.length) { lista.innerHTML = '<div class="alert alert-light text-center">Nenhum chamado encontrado.</div>'; return; }
+
+  lista.innerHTML = chamados.map(c => `
+    <div class="card card-chamado shadow-sm mb-2">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1">#${c.id} — ${c.titulo}</h6>
+            <span class="badge bg-${corStatus(c.status)} badge-status">${c.status}</span>
+            <span class="badge bg-${corPrioridade(c.prioridade)} badge-status">${c.prioridade}</span>
+            <small class="text-muted ms-2"><i class="bi bi-chat-dots"></i> ${c.total_respostas || 0}</small>
+          </div>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-primary" onclick="verChamado(${c.id})"><i class="bi bi-eye"></i></button>
+            ${ehAdmin() ? `<button class="btn btn-outline-danger" onclick="excluirChamado(${c.id})"><i class="bi bi-trash"></i></button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function verChamado(id) {
+  const r = await fetch(`${API}/chamados/${id}?usuario_id=${usuarioLogado.id}&tipo=${usuarioLogado.tipo}`);
+  if (r.status === 403) { alert('Você não tem permissão para ver este chamado.'); return; }
+  if (r.status !== 200) { alert('Chamado não encontrado.'); return; }
+
+  const c = await r.json();
+  chamadoAberto = id;
+  document.getElementById('modalTitulo').textContent = `#${c.id} — ${c.titulo}`;
+
+  const respostasHtml = (c.respostas && c.respostas.length)
+    ? c.respostas.map(rp => `
+        <div class="resposta-item p-2 mb-2 rounded">
+          <div class="small text-muted">Usuário ${rp.usuario_id} · ${rp.criado_em ? rp.criado_em.substring(0,16).replace('T',' ') : ''}</div>
+          <div>${rp.mensagem}</div>
+        </div>`).join('')
+    : '<p class="text-muted small">Sem respostas ainda.</p>';
+
+  const fechado = c.status === 'fechado';
+
+  // bloco de status: SO admin pode mudar
+  const blocoStatus = ehAdmin() ? `
+    <hr>
+    <label class="form-label small"><strong>Mudar status</strong></label>
+    <div class="input-group input-group-sm mb-3">
+      <select id="modalStatus" class="form-select" ${fechado ? 'disabled' : ''}>
+        <option value="aberto" ${c.status==='aberto'?'selected':''}>Aberto</option>
+        <option value="em_atendimento" ${c.status==='em_atendimento'?'selected':''}>Em atendimento</option>
+        <option value="resolvido" ${c.status==='resolvido'?'selected':''}>Resolvido</option>
+        <option value="fechado" ${c.status==='fechado'?'selected':''}>Fechado</option>
+      </select>
+      <button class="btn btn-primary" onclick="mudarStatus()" ${fechado ? 'disabled' : ''}>Salvar</button>
+    </div>
+    ${fechado ? '<div class="alert alert-secondary py-2 small">Chamado fechado não pode ser alterado.</div>' : ''}
+  ` : `
+    <hr>
+    <div class="alert alert-light py-2 small"><i class="bi bi-lock"></i> Apenas administradores podem mudar o status.</div>
+  `;
+
+  document.getElementById('modalCorpo').innerHTML = `
+    <p><strong>Descrição:</strong> ${c.descricao}</p>
+    <p>
+      <span class="badge bg-${corStatus(c.status)}">${c.status}</span>
+      <span class="badge bg-${corPrioridade(c.prioridade)}">${c.prioridade}</span>
+      ${c.categoria ? `<span class="badge bg-light text-dark">${c.categoria}</span>` : ''}
+    </p>
+    ${blocoStatus}
+    <hr>
+    <h6>Respostas</h6>
+    ${respostasHtml}
+    ${!fechado ? `
+      <div class="input-group input-group-sm mt-3">
+        <input type="text" id="modalResposta" class="form-control" placeholder="Escreva uma resposta...">
+        <button class="btn btn-success" onclick="responder()">Responder</button>
+      </div>` : ''}
+  `;
+
+  new bootstrap.Modal(document.getElementById('modalChamado')).show();
+}
+
+async function mudarStatus() {
+  const status = document.getElementById('modalStatus').value;
+  const r = await fetch(`${API}/chamados/${chamadoAberto}?usuario_id=${usuarioLogado.id}&tipo=${usuarioLogado.tipo}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  const d = await r.json();
+  if (r.status === 200) { verChamado(chamadoAberto); carregarChamados(); }
+  else { alert(d.message || 'Erro ao mudar status.'); }
+}
+
+async function responder() {
+  const mensagem = document.getElementById('modalResposta').value.trim();
+  if (!mensagem) return;
+  const r = await fetch(`${API}/chamados/${chamadoAberto}/respostas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mensagem, usuario_id: usuarioLogado.id })
+  });
+  const d = await r.json();
+  if (r.status === 201) { verChamado(chamadoAberto); carregarChamados(); }
+  else { alert(d.message || 'Erro ao responder.'); }
+}
+
+async function excluirChamado(id) {
+  if (!confirm('Excluir o chamado #' + id + '?')) return;
+  const r = await fetch(`${API}/chamados/${id}`, { method: 'DELETE' });
+  if (r.status === 200) carregarChamados();
+  else alert('Erro ao excluir.');
+}
+</script>
+</body>
+</html>
