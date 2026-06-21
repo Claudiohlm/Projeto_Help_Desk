@@ -16,7 +16,7 @@ load_dotenv()
 # le os dados do admin a partir do .env
 # (com valores padrao caso nao estejam definidos)
 ADMIN_NOME = os.getenv("ADMIN_NOME", "Administrador")
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@admin.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 ADMIN_SENHA = os.getenv("ADMIN_SENHA")
 
 # protecao: nao deixa criar admin sem senha definida no .env
